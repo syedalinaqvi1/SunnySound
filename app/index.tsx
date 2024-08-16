@@ -38,7 +38,7 @@ export default function AnimatedScreen() {
   const rotateValue = useSharedValue(0);
   const fadeInValue = useSharedValue(0);
   const popScaleValue = useSharedValue(1);
-  const progress = useSharedValue(1);
+  const progress = useSharedValue(0.1);
 
   let mount = true;
 
@@ -69,15 +69,22 @@ export default function AnimatedScreen() {
           fadeInValue.value = withTiming(
             1,
             {
-              duration: 1250,
+              duration: 300,
               easing: Easing.out(Easing.ease),
             },
             () => {
-              progress.value = withTiming(0.1, {
-                duration: 300,
-                easing: Easing.out(Easing.ease),
-              });
               runOnJS(playSound)();
+              progress.value = withSequence(
+                withTiming(1, {
+                  duration: 300,
+                  easing: Easing.out(Easing.ease),
+                }),
+                withTiming(0.1, {
+                  duration: 500,
+                  easing: Easing.out(Easing.ease),
+                })
+              );
+
               popScaleValue.value = withSpring(
                 1.8,
                 {
@@ -103,7 +110,7 @@ export default function AnimatedScreen() {
           );
         })
       ),
-      withTiming(1, { duration: 2250 })
+      withTiming(1, { duration: 2250, easing: Easing.out(Easing.ease) })
     );
 
     scaleValue.value = sequence;
@@ -128,15 +135,14 @@ export default function AnimatedScreen() {
     <>
       <ImageBackground
         source={require("../assets/images/backGround.png")}
-        className="flex-1 items-center justify-center"
-        imageStyle={{ resizeMode: "cover" }}
-      >
+        className='flex-1 items-center justify-center'
+        imageStyle={{ resizeMode: "cover" }}>
         <Image
           source={require("../assets/images/logo.png")}
-          className="w-[50%] h-[8%]"
-          resizeMode="contain"
+          className='w-[50%] h-[8%]'
+          resizeMode='contain'
         />
-        <View className="flex-row flex-wrap w-[80%] self-center justify-center items-center">
+        <View className='flex-row flex-wrap w-[80%] self-center justify-center items-center'>
           {text.split("").map((char, index) => {
             const animatedStyle = useAnimatedStyle(() => ({
               opacity: animatedValues[index].value,
@@ -154,18 +160,16 @@ export default function AnimatedScreen() {
             return (
               <Animated.Text
                 key={`${char}-${index}`}
-                className="text-2xl font-bold text-[#313B4D] text-center"
-                style={animatedStyle}
-              >
+                className='text-2xl font-bold text-[#313B4D] text-center'
+                style={animatedStyle}>
                 {char}
               </Animated.Text>
             );
           })}
         </View>
         <Animated.View
-          className=" justify-center items-center rounded-[30px] z-10"
-          style={rotateAnimation}
-        >
+          className=' justify-center items-center rounded-[30px] z-10'
+          style={rotateAnimation}>
           <Hexagon
             hexagonSize={Dimensions.get("window").height / 12}
             fillPercentage={1}
@@ -179,53 +183,49 @@ export default function AnimatedScreen() {
           />
         </Animated.View>
         <Animated.Text
-          className="text-xl font-bold text-[#313B4D]"
-          style={{ opacity: fadeInValue }}
-        >
+          className='text-xl font-bold text-[#313B4D]'
+          style={{ opacity: fadeInValue }}>
           Speech in Noise
         </Animated.Text>
         <Animated.Text
-          className="text-lg font-medium text-[#5D687E]"
-          style={{ opacity: fadeInValue }}
-        >
+          className='text-lg font-medium text-[#5D687E]'
+          style={{ opacity: fadeInValue }}>
           Level 2
         </Animated.Text>
         <Animated.View
-          className="w-[80%] h-2 rounded-lg bg-[#DCE2EC] mt-4 "
-          style={[{ opacity: fadeInValue }]}
-        >
+          className='w-[80%] h-2 rounded-lg bg-[#DCE2EC] mt-4 '
+          style={[{ opacity: fadeInValue }]}>
           <Animated.View
-            className="h-[100%] bg-[#0D61FD] rounded-lg"
+            className='h-[100%] bg-[#0D61FD] rounded-lg'
             style={[animatedStyle]}
           />
         </Animated.View>
         <Animated.View
-          className="flex-row items-center justify-between w-[79%] mb-6"
-          style={{ opacity: fadeInValue }}
-        >
-          <Text className="text-base font-semibold text-[#313B4D]">
+          className='flex-row items-center justify-between w-[79%] mb-6'
+          style={{ opacity: fadeInValue }}>
+          <Text className='text-base font-semibold text-[#313B4D]'>
             Next Level
           </Text>
-          <Text className="text-base font-semibold text-[#313B4D]">1/60</Text>
+          <Text className='text-base font-semibold text-[#313B4D]'>1/60</Text>
         </Animated.View>
       </ImageBackground>
       {showTada && (
-        <View className="absolute bottom-0 w-[150%] h-[80%] items-center justify-center self-center">
+        <View className='absolute bottom-0 w-[150%] h-[80%] items-center justify-center self-center'>
           <LottieView
             autoPlay={true}
             loop={false}
             ref={animation}
-            className="w-[100%] h-[100%] items-center justify-end"
+            className='w-[100%] h-[100%] items-center justify-end'
             source={require("../assets/images/confettiBackground.json")}
           />
         </View>
       )}
-      <View className="h-[10%] w-full bg-white shadow-lg flex-row items-center justify-evenly">
-        <View className="w-[40%] h-[65%] bg-white border border-[#0D61FD] rounded-lg items-center justify-center">
-          <Text className="text-xl font-normal text-blue-600">End</Text>
+      <View className='h-[10%] w-full bg-white shadow-lg flex-row items-center justify-evenly'>
+        <View className='w-[40%] h-[65%] bg-white border border-[#0D61FD] rounded-lg items-center justify-center'>
+          <Text className='text-xl font-normal text-blue-600'>End</Text>
         </View>
-        <View className="w-[40%] h-[65%] bg-[#0D61FD] border border-[#0D61FD]  rounded-lg items-center justify-center">
-          <Text className="text-xl font-medium text-white">Continue</Text>
+        <View className='w-[40%] h-[65%] bg-[#0D61FD] border border-[#0D61FD]  rounded-lg items-center justify-center'>
+          <Text className='text-xl font-medium text-white'>Continue</Text>
         </View>
       </View>
     </>
