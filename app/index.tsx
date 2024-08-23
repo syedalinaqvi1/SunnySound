@@ -10,7 +10,7 @@ import {
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withSpring,
+  withTiming,
   withSequence,
   withDelay,
   runOnJS,
@@ -29,46 +29,53 @@ export default function AnimatedScreen() {
   const [progressBar, setProgressBar] = useState(0);
 
   const popScaleValue = useSharedValue(1);
+  const scale = useSharedValue(1);
+
   const animatedStyle = useAnimatedStyle(() => {
     return {
       transform: [{ scale: popScaleValue.value }],
     };
   });
+  const animatedBarStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: scale.value }],
+    };
+  });
   let mount = true;
   const progressRun = async () => {
     if (mount) {
-      setInterval(updateProgressBar, 300);
+      scale.value = withSequence(
+        withTiming(1.4, {
+          duration: 400,
+        }),
+        withTiming(1, {
+          duration: 300,
+        })
+      );
+      setTimeout(() => {
+        setInterval(updateProgressBar, 0);
+      }, 500);
     }
     return;
   };
   useEffect(() => {
     const updateProgress = () => {
       setProgress((prevProgress) => {
-        const newProgress = prevProgress + 0.1;
+        const newProgress = prevProgress + 0.01;
         return newProgress >= 0.5 ? 0.5 : newProgress;
       });
     };
-    const progressInterval = setInterval(updateProgress, 300);
+    const progressInterval = setInterval(updateProgress, 0);
     popScaleValue.value = withDelay(
-      1500,
+      2300,
       withSequence(
-        withSpring(1.2, {
-          damping: 5,
-          stiffness: 90,
-          mass: 1,
-          overshootClamping: false,
-          restDisplacementThreshold: 0.01,
-          restSpeedThreshold: 0.2,
+        withTiming(1.5, {
+          duration: 300,
         }),
-        withSpring(
+        withTiming(
           1,
           {
-            damping: 10,
-            stiffness: 100,
-            mass: 1,
-            overshootClamping: false,
-            restDisplacementThreshold: 0.01,
-            restSpeedThreshold: 0.03,
+            duration: 300,
           },
           () => {
             runOnJS(progressRun)();
@@ -82,7 +89,7 @@ export default function AnimatedScreen() {
   }, []);
   const updateProgressBar = () => {
     setProgressBar((prevProgress) => {
-      const newProgress = prevProgress + 0.1;
+      const newProgress = prevProgress + 0.01;
       return newProgress >= 0.5 ? 0.5 : newProgress;
     });
   };
@@ -140,7 +147,7 @@ export default function AnimatedScreen() {
             Keep going and reach your daily goal!
           </Text>
         </View>
-        <View className="w-[90%] h-[21%] items-center  bg-[#effafc] py-4  border border-[#0D61FD] rounded-2xl">
+        <View className="w-[90%]  items-center  bg-[#effafc] py-4  border border-[#0D61FD] rounded-2xl">
           <View className="flex-row items-center  w-[86%] pb-5">
             <Hexagon
               hexagonSize={Dimensions.get("window").height / 22}
@@ -162,21 +169,24 @@ export default function AnimatedScreen() {
               </Text>
             </View>
           </View>
-          <Progress.Bar
-            progress={progressBar}
-            width={290}
-            height={7}
-            color={"#0D61FD"}
-            unfilledColor={"#ffffff"}
-            borderWidth={1}
-            borderColor="#C9D0DE"
-            animationType="timing"
-          />
-          <View className="w-[82%] items-end">
-            <Text className="text-lg font-400 text-[#5D687E]">{`${(
-              progressBar * 100
-            ).toFixed(0)}%`}</Text>
-          </View>
+          <Animated.View style={animatedBarStyle}>
+            <View className="w-[100%]  items-end  bg-[#effafc] pt-0 px-2  ">
+              <Progress.Bar
+                progress={progressBar}
+                width={290}
+                height={7}
+                color={"#0D61FD"}
+                unfilledColor={"#ffffff"}
+                borderWidth={1}
+                borderColor="#C9D0DE"
+              />
+              <View className="w-[82%] items-end">
+                <Text className="text-lg font-400 text-[#5D687E]">{`${(
+                  progressBar * 100
+                ).toFixed(0)}%`}</Text>
+              </View>
+            </View>
+          </Animated.View>
         </View>
       </ImageBackground>
       <View className="h-[11%] w-full bg-white shadow-lg flex-row items-center justify-evenly">
