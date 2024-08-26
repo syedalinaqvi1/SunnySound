@@ -45,7 +45,7 @@ export default function AnimatedScreen() {
   const progressRun = async () => {
     if (mount) {
       scale.value = withSequence(
-        withTiming(1.4, {
+        withTiming(1.3, {
           duration: 400,
         }),
         withTiming(1, {
@@ -67,9 +67,9 @@ export default function AnimatedScreen() {
     };
     const progressInterval = setInterval(updateProgress, 0);
     popScaleValue.value = withDelay(
-      2300,
+      2200,
       withSequence(
-        withTiming(1.5, {
+        withTiming(1.25, {
           duration: 300,
         }),
         withTiming(
@@ -176,7 +176,7 @@ export default function AnimatedScreen() {
                 width={290}
                 height={7}
                 color={"#0D61FD"}
-                unfilledColor={"#ffffff"}
+                unfilledColor={"transparent"}
                 borderWidth={1}
                 borderColor="#C9D0DE"
               />
