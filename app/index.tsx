@@ -45,7 +45,7 @@ export default function AnimatedScreen() {
   const progressRun = async () => {
     if (mount) {
       scale.value = withSequence(
-        withTiming(1.3, {
+        withTiming(1.25, {
           duration: 400,
         }),
         withTiming(1, {
@@ -170,13 +170,13 @@ export default function AnimatedScreen() {
             </View>
           </View>
           <Animated.View style={animatedBarStyle}>
-            <View className="w-[100%]  items-end  bg-[#effafc] pt-0 px-2  ">
+            <View className="w-[100%]  items-end   pt-0 px-2  ">
               <Progress.Bar
                 progress={progressBar}
                 width={290}
                 height={7}
                 color={"#0D61FD"}
-                unfilledColor={"transparent"}
+                unfilledColor={"white"}
                 borderWidth={1}
                 borderColor="#C9D0DE"
               />
