@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from "react";
+/** @format */
+
+import React, { useEffect, useRef, useState } from "react";
 import {
   ImageBackground,
   Image,
@@ -7,16 +9,25 @@ import {
   Dimensions,
   Pressable,
 } from "react-native";
+import LottieView from "lottie-react-native";
 import Animated, {
+  Easing,
+  interpolate,
   useSharedValue,
   useAnimatedStyle,
   withTiming,
   withSequence,
+  withSpring,
   withDelay,
+  useAnimatedReaction,
   runOnJS,
 } from "react-native-reanimated";
-import * as Progress from "react-native-progress";
+import { useRouter } from "expo-router";
+import { Audio } from "expo-av";
 import Hexagon from "./Hexagon";
+
+const deviceWidth = Dimensions.get("window").width;
+const deviceHeight = Dimensions.get("window").height;
 
 const Trophy_Hexagon = {
   activeColor: ["#ad8578", "#a57085", "#985299", "#9145a1"],
@@ -25,84 +36,139 @@ const Trophy_Hexagon = {
 };
 
 export default function AnimatedScreen() {
-  const [progress, setProgress] = useState(0);
-  const [progressBar, setProgressBar] = useState(0);
+  const router = useRouter();
+  const [showTada, setShowTada] = useState(false);
+  const [text] = useState("Congrats! You reached a new level");
+  const animatedValues = text.split("").map(() => useSharedValue(0));
+  const [progressPercentage, setProgressPercentage] = useState(0.01);
 
+  const animation = useRef<LottieView>(null);
+  const scaleValue = useSharedValue(0);
+  const rotateValue = useSharedValue(0);
+  const fadeInValue = useSharedValue(0);
   const popScaleValue = useSharedValue(1);
-  const scale = useSharedValue(1);
+  const progress = useSharedValue(0.01);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: popScaleValue.value }],
-    };
-  });
-  const animatedBarStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.value }],
-    };
-  });
   let mount = true;
-  const progressRun = async () => {
+  const playSound = async () => {
+    const totalDuration = 2000;
+    const stepDuration = totalDuration / 4;
     if (mount) {
-      scale.value = withSequence(
-        withTiming(1.25, {
-          duration: 400,
+      progress.value = withSequence(
+        withTiming(0.01, {
+          duration: stepDuration,
+          easing: Easing.linear,
         }),
-        withTiming(1, {
-          duration: 300,
+        withDelay(
+          stepDuration / 2,
+          withTiming(0.5, {
+            duration: stepDuration,
+            easing: Easing.linear,
+          })
+        ),
+        withDelay(
+          stepDuration / 2,
+          withTiming(1, {
+            duration: 500,
+            easing: Easing.linear,
+          })
+        ),
+        withTiming(0.01, {
+          duration: 500,
+          easing: Easing.linear,
         })
       );
-      setTimeout(() => {
-        setInterval(updateProgressBar, 0);
-      }, 500);
+      const { sound }: any = await Audio.Sound.createAsync(
+        require("../assets/audio/tada.mp3")
+      );
+      mount = false;
+      await sound.playAsync();
     }
+    setShowTada(true);
     return;
   };
+
   useEffect(() => {
-    const updateProgress = () => {
-      setProgress((prevProgress) => {
-        const newProgress = prevProgress + 0.01;
-        return newProgress >= 0.5 ? 0.5 : newProgress;
-      });
-    };
-    const progressInterval = setInterval(updateProgress, 0);
-    popScaleValue.value = withDelay(
-      2200,
-      withSequence(
-        withTiming(1.25, {
-          duration: 300,
-        }),
-        withTiming(
-          1,
-          {
-            duration: 300,
-          },
-          () => {
-            runOnJS(progressRun)();
-          }
-        )
-      )
-    );
-    return () => {
-      clearInterval(progressInterval);
-    };
-  }, []);
-  const updateProgressBar = () => {
-    setProgressBar((prevProgress) => {
-      const newProgress = prevProgress + 0.01;
-      return newProgress >= 0.5 ? 0.5 : newProgress;
+    animatedValues.forEach((anim, index) => {
+      anim.value = withDelay(index * 30, withTiming(1, { duration: 100 }));
     });
-  };
 
-  const progressCircleValue = (
-    <View className="justify-center items-center">
-      <Text className="text-3xl font-bold text-[#313B4D]">
-        {Math.round(progress * 100)}%
-      </Text>
-      <Text className="text-[18px] font-400 text-[#5D687E]">Complete</Text>
-    </View>
+    const totalAnimationDuration = text.length * 30 + 100;
+    const sequence = withSequence(
+      withDelay(
+        totalAnimationDuration,
+        withTiming(1, { duration: 3250 }, () => {
+          runOnJS(playSound)();
+          fadeInValue.value = withTiming(
+            1,
+            {
+              duration: 1000,
+              easing: Easing.out(Easing.ease),
+            },
+            () => {
+              popScaleValue.value = withSpring(
+                2,
+                {
+                  damping: 2,
+                  stiffness: 80,
+                  mass: 1,
+                  overshootClamping: false,
+                  restDisplacementThreshold: 0.01,
+                  restSpeedThreshold: 0.2,
+                },
+                () => {
+                  popScaleValue.value = withSpring(1, {
+                    damping: 8,
+                    stiffness: 90,
+                    mass: 1,
+                    overshootClamping: false,
+                    restDisplacementThreshold: 0.01,
+                    restSpeedThreshold: 0.03,
+                  });
+                }
+              );
+            }
+          );
+        })
+      ),
+      withTiming(1, { duration: 3250 })
+    );
+
+    scaleValue.value = sequence;
+    rotateValue.value = sequence;
+  }, []);
+  const rotateAnimation = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { scale: interpolate(scaleValue.value, [0, 1], [0, 1]) },
+        { rotate: `${interpolate(rotateValue.value, [0, 1], [2160, 0])}deg` },
+        { scale: popScaleValue.value },
+      ],
+    };
+  });
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      width: `${progress.value * 100}%`,
+    };
+  });
+
+  useAnimatedReaction(
+    () => progress.value,
+    (value) => {
+      let displayValue = 1;
+      if (value >= 0.5 && value < 1) {
+        displayValue = 50;
+      } else if (value === 1) {
+        displayValue = 100;
+      } else {
+        displayValue = 1;
+      }
+      runOnJS(setProgressPercentage)(displayValue);
+    }
   );
-
+  const handleNext = () => {
+    router.push("/test");
+  };
   return (
     <>
       <ImageBackground
@@ -110,98 +176,106 @@ export default function AnimatedScreen() {
         className="flex-1 items-center justify-center"
         imageStyle={{ resizeMode: "cover" }}
       >
-        <Text className="text-2xl font-bold  pt-7 text-[#313B4D]">
-          Great job,
-        </Text>
-        <Text className="text-2xl font-bold pb-5 text-[#313B4D]">
-          keep going!
-        </Text>
-        <View className="w-[90%] h-[52%] items-center  bg-[#effafc] py-3 border border-[#0D61FD] rounded-2xl mb-4">
-          <Text className="text-2xl font-semibold text-[#313B4D]">
-            Today’s goal
-          </Text>
-          <Text className="text-base font-400 text-[#5D687E] pt-1 pb-6">
-            15 minutes - 60 lessons
-          </Text>
-          <Animated.View style={animatedStyle}>
-            <Progress.Circle
-              size={210}
-              progress={progress}
-              showsText={true}
-              formatText={() => progressCircleValue}
-              textStyle={{
-                fontSize: 18,
-                fontWeight: "bold",
-                textAlign: "center",
-                color: "#313B4D",
-              }}
-              thickness={15}
-              color={"#D600C4"}
-              unfilledColor="#C9D0DE"
-              borderWidth={0}
-              strokeCap="round"
-              indeterminate={false}
-            />
-          </Animated.View>
-          <Text className="text-lg font-400 text-[#313B4D] pb-1 pt-5">
-            Keep going and reach your daily goal!
-          </Text>
+        <Image
+          source={require("../assets/images/logo.png")}
+          className="w-[50%] h-[8%]"
+          resizeMode="contain"
+        />
+        <View className="flex-row flex-wrap w-[63%] self-center justify-center items-center">
+          {text.split("").map((char, index) => {
+            const animatedStyle = useAnimatedStyle(() => ({
+              opacity: animatedValues[index].value,
+              transform: [
+                {
+                  translateY: interpolate(
+                    animatedValues[index].value,
+                    [0, 1],
+                    [10, 0]
+                  ),
+                },
+              ],
+            }));
+
+            return (
+              <Animated.Text
+                key={`${char}-${index}`}
+                className="text-2xl font-bold text-[#313B4D] text-center"
+                style={animatedStyle}
+              >
+                {char}
+              </Animated.Text>
+            );
+          })}
         </View>
-        <View className="w-[90%]  items-center  bg-[#effafc] py-4  border border-[#0D61FD] rounded-2xl">
-          <View className="flex-row items-center  w-[86%] pb-5">
-            <Hexagon
-              hexagonSize={Dimensions.get("window").height / 22}
-              fillPercentage={1}
-              cornerRadius={2.5}
-              iconWidth={Dimensions.get("window").height / 26}
-              iconHeight={Dimensions.get("window").height / 26}
-              strokeWidth={4}
-              activeColor={Trophy_Hexagon.activeColor}
-              fillColor={Trophy_Hexagon.fillColor}
-              borderColor={Trophy_Hexagon.borderColor}
-            />
-            <View className="w-48 ml-3">
-              <Text className="text-2xl font-semibold pb-1  text-[#313B4D]">
-                Keep going!
-              </Text>
-              <Text className="text-base font-400 text-[#5D687E] ">
-                Speech in noise - Level 3
-              </Text>
-            </View>
-          </View>
-          <Animated.View style={animatedBarStyle}>
-            <View className="w-[100%]  items-end   pt-0 px-2  ">
-              <Progress.Bar
-                progress={progressBar}
-                width={290}
-                height={7}
-                color={"#0D61FD"}
-                unfilledColor={"white"}
-                borderWidth={1}
-                borderColor="#C9D0DE"
-              />
-              <View className="w-[82%] items-end">
-                <Text className="text-lg font-400 text-[#5D687E]">{`${(
-                  progressBar * 100
-                ).toFixed(0)}%`}</Text>
-              </View>
-            </View>
-          </Animated.View>
-        </View>
+        <Animated.View
+          className=" justify-center items-center rounded-[30px] z-10"
+          style={rotateAnimation}
+        >
+          <Hexagon
+            hexagonSize={Dimensions.get("window").height / 12}
+            fillPercentage={1}
+            cornerRadius={2.5}
+            iconWidth={Dimensions.get("window").height / 16}
+            iconHeight={Dimensions.get("window").height / 16}
+            strokeWidth={4}
+            activeColor={Trophy_Hexagon.activeColor}
+            fillColor={Trophy_Hexagon.fillColor}
+            borderColor={Trophy_Hexagon.borderColor}
+          />
+        </Animated.View>
+        <Animated.Text
+          className="text-xl font-bold text-[#313B4D]"
+          style={{ opacity: fadeInValue }}
+        >
+          Speech in Noise
+        </Animated.Text>
+        <Animated.Text
+          className="text-lg font-normal text-[#5D687E]"
+          style={{ opacity: fadeInValue }}
+        >
+          Level 2
+        </Animated.Text>
+        <Animated.View
+          className="w-[80%] h-2 rounded-lg bg-[#DCE2EC] mt-4 "
+          style={[{ opacity: fadeInValue }]}
+        >
+          <Animated.View
+            className="h-[100%] bg-[#0D61FD] rounded-lg"
+            style={[animatedStyle]}
+          />
+        </Animated.View>
+        <Animated.View
+          className="flex-row items-center justify-between w-[79%] mb-6"
+          style={{ opacity: fadeInValue }}
+        >
+          <Text className="text-base font-semibold text-[#313B4D]">
+            Progress
+          </Text>
+          <Text className="text-base font-semibold text-[#313B4D]">
+            {progressPercentage}%
+          </Text>
+        </Animated.View>
       </ImageBackground>
-      <View className="h-[11%] w-full bg-white shadow-lg flex-row items-center justify-evenly">
-        <Pressable className="w-[16%] h-[65%] bg-white border border-[#0D61FD] rounded-2xl items-center justify-center">
-          <Image
-            source={require("../assets/images/home.png")}
-            className="h-10 w-10"
+      {showTada && (
+        <View className="absolute bottom-0 w-[150%] h-[80%] items-center justify-center self-center">
+          <LottieView
+            autoPlay={true}
+            loop={false}
+            ref={animation}
+            className="w-[100%] h-[100%] items-center justify-end"
+            source={require("../assets/images/confettiBackground.json")}
           />
+        </View>
+      )}
+      <View className="h-[10%] w-full bg-white shadow-lg flex-row items-center justify-evenly">
+        <Pressable className="w-[40%] h-[65%] bg-white border border-[#0D61FD] rounded-lg items-center justify-center">
+          <Text className="text-xl font-normal text-blue-600">End</Text>
         </Pressable>
-        <Pressable className="w-[70%] h-[65%] bg-[#0D61FD] border border-[#0D61FD]  flex-row  rounded-2xl items-center justify-center">
-          <Text className="text-xl font-medium text-white">Keep going</Text>
-          <Image
-            source={require("../assets/images/arrowRight.png")}
-            className="h-10 w-10 ml-5"
-          />
+        <Pressable
+          className="w-[40%] h-[65%] bg-[#0D61FD] border border-[#0D61FD]  rounded-lg items-center justify-center"
+          onPress={handleNext}
+        >
+          <Text className="text-xl font-medium text-white">Continue</Text>
         </Pressable>
       </View>
     </>
