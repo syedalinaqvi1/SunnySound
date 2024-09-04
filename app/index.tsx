@@ -172,12 +172,12 @@ export default function AnimatedScreen() {
   return (
     <>
       <ImageBackground
-        source={require("../assets/images/backGround.png")}
+        source={require("./assets/images/backGround.png")}
         className="flex-1 items-center justify-center"
         imageStyle={{ resizeMode: "cover" }}
       >
         <Image
-          source={require("../assets/images/logo.png")}
+          source={require("./assets/images/logo.png")}
           className="w-[50%] h-[8%]"
           resizeMode="contain"
         />

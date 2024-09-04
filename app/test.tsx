@@ -118,7 +118,7 @@ export default function AnimatedScreen() {
   return (
     <>
       <ImageBackground
-        source={require("../assets/images/backGround.png")}
+        source={require("./assets/images/backGround.png")}
         className="flex-1 items-center justify-center"
         imageStyle={{ resizeMode: "cover" }}
       >
@@ -201,7 +201,7 @@ export default function AnimatedScreen() {
           className="w-[16%] h-[65%]   bg-white border border-[#0D61FD] rounded-2xl md:rounded-3xl  items-center justify-center"
         >
           <Image
-            source={require("../assets/images/home.png")}
+            source={require("./assets/images/home.png")}
             className="h-10 w-10 md:w-16 md:h-16"
           />
         </Pressable>
@@ -210,7 +210,7 @@ export default function AnimatedScreen() {
             Keep going
           </Text>
           <Image
-            source={require("../assets/images/arrowRight.png")}
+            source={require("./assets/images/arrowRight.png")}
             className="h-10 w-10 md:w-14 md:h-14 ml-5"
           />
         </Pressable>
