@@ -26,8 +26,8 @@ import { useRouter } from "expo-router";
 import { Audio } from "expo-av";
 import Hexagon from "./Hexagon";
 
-const deviceWidth = Dimensions.get("window").width;
 const deviceHeight = Dimensions.get("window").height;
+const deviceWidth = Dimensions.get("window").width;
 
 const Trophy_Hexagon = {
   activeColor: ["#ad8578", "#a57085", "#985299", "#9145a1"],
@@ -199,7 +199,7 @@ export default function AnimatedScreen() {
             return (
               <Animated.Text
                 key={`${char}-${index}`}
-                className="text-2xl font-bold text-[#313B4D] text-center"
+                className="text-2xl md:text-3xl font-bold text-[#313B4D] text-center"
                 style={animatedStyle}
               >
                 {char}
@@ -212,11 +212,11 @@ export default function AnimatedScreen() {
           style={rotateAnimation}
         >
           <Hexagon
-            hexagonSize={Dimensions.get("window").height / 12}
+            hexagonSize={deviceHeight / 12}
             fillPercentage={1}
             cornerRadius={2.5}
-            iconWidth={Dimensions.get("window").height / 16}
-            iconHeight={Dimensions.get("window").height / 16}
+            iconWidth={deviceHeight / 16}
+            iconHeight={deviceHeight / 16}
             strokeWidth={4}
             activeColor={Trophy_Hexagon.activeColor}
             fillColor={Trophy_Hexagon.fillColor}
@@ -224,34 +224,34 @@ export default function AnimatedScreen() {
           />
         </Animated.View>
         <Animated.Text
-          className="text-xl font-bold text-[#313B4D]"
+          className="text-xl md:text-2xl font-bold text-[#313B4D]"
           style={{ opacity: fadeInValue }}
         >
           Speech in Noise
         </Animated.Text>
         <Animated.Text
-          className="text-lg font-normal text-[#5D687E]"
+          className="text-lg md:text-2xl font-normal text-[#5D687E]"
           style={{ opacity: fadeInValue }}
         >
           Level 2
         </Animated.Text>
         <Animated.View
-          className="w-[80%] h-2 rounded-lg bg-[#DCE2EC] mt-4 "
+          className="w-[80%] h-2 md:h-3 rounded-xl bg-[#DCE2EC] mt-4 "
           style={[{ opacity: fadeInValue }]}
         >
           <Animated.View
-            className="h-[100%] bg-[#0D61FD] rounded-lg"
+            className="h-[100%] bg-[#0D61FD] rounded-xl"
             style={[animatedStyle]}
           />
         </Animated.View>
         <Animated.View
-          className="flex-row items-center justify-between w-[79%] mb-6"
+          className="flex-row items-center justify-between w-[79%] mb-6 md:mb-3 "
           style={{ opacity: fadeInValue }}
         >
-          <Text className="text-base font-semibold text-[#313B4D]">
+          <Text className="text-base md:text-xl font-semibold text-[#313B4D]">
             Progress
           </Text>
-          <Text className="text-base font-semibold text-[#313B4D]">
+          <Text className="text-base md:text-xl font-semibold text-[#313B4D]">
             {progressPercentage}%
           </Text>
         </Animated.View>
@@ -269,13 +269,17 @@ export default function AnimatedScreen() {
       )}
       <View className="h-[10%] w-full bg-white shadow-lg flex-row items-center justify-evenly">
         <Pressable className="w-[40%] h-[65%] bg-white border border-[#0D61FD] rounded-lg items-center justify-center">
-          <Text className="text-xl font-normal text-blue-600">End</Text>
+          <Text className="text-xl md:text-2xl font-normal text-blue-600">
+            End
+          </Text>
         </Pressable>
         <Pressable
           className="w-[40%] h-[65%] bg-[#0D61FD] border border-[#0D61FD]  rounded-lg items-center justify-center"
           onPress={handleNext}
         >
-          <Text className="text-xl font-medium text-white">Continue</Text>
+          <Text className="text-xl  md:text-2xl font-medium text-white">
+            Continue
+          </Text>
         </Pressable>
       </View>
     </>
