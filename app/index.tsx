@@ -263,7 +263,7 @@ export default function AnimatedScreen() {
             loop={false}
             ref={animation}
             className="w-[100%] h-[100%] items-center justify-end"
-            source={require("../assets/images/confettiBackground.json")}
+            source={require("./assets/images/confettiBackground.json")}
           />
         </View>
       )}
