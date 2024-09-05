@@ -51,32 +51,16 @@ export default function AnimatedScreen() {
 
   let mount = true;
   const playSound = async () => {
-    const totalDuration = 2000;
-    const stepDuration = totalDuration / 4;
+    const stepDuration = 500;
     if (mount) {
       progress.value = withSequence(
-        withTiming(0.01, {
-          duration: stepDuration,
-          easing: Easing.linear,
-        }),
         withDelay(
-          stepDuration / 2,
-          withTiming(0.5, {
+          stepDuration,
+          withTiming(1, {
             duration: stepDuration,
             easing: Easing.linear,
           })
-        ),
-        withDelay(
-          stepDuration / 2,
-          withTiming(1, {
-            duration: 500,
-            easing: Easing.linear,
-          })
-        ),
-        withTiming(0.01, {
-          duration: 500,
-          easing: Easing.linear,
-        })
+        )
       );
       const { sound }: any = await Audio.Sound.createAsync(
         require("../assets/audio/tada.mp3")
@@ -160,8 +144,6 @@ export default function AnimatedScreen() {
         displayValue = 50;
       } else if (value === 1) {
         displayValue = 100;
-      } else {
-        displayValue = 1;
       }
       runOnJS(setProgressPercentage)(displayValue);
     }
