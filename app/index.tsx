@@ -23,6 +23,7 @@ import Animated, {
   runOnJS,
 } from "react-native-reanimated";
 import { useRouter } from "expo-router";
+import * as Progress from "react-native-progress";
 import { Audio } from "expo-av";
 import Hexagon from "./Hexagon";
 
@@ -41,6 +42,8 @@ export default function AnimatedScreen() {
   const [text] = useState("Congrats! You reached a new level");
   const animatedValues = text.split("").map(() => useSharedValue(0));
   const [progressPercentage, setProgressPercentage] = useState(0.01);
+  const [progressBar, setProgressBar] = useState(0);
+  const progressBarHeight: number = Math.ceil(deviceWidth / 60);
 
   const animation = useRef<LottieView>(null);
   const scaleValue = useSharedValue(0);
@@ -51,25 +54,24 @@ export default function AnimatedScreen() {
 
   let mount = true;
   const playSound = async () => {
-    const stepDuration = 500;
     if (mount) {
-      progress.value = withSequence(
-        withDelay(
-          stepDuration,
-          withTiming(1, {
-            duration: stepDuration,
-            easing: Easing.linear,
-          })
-        )
-      );
       const { sound }: any = await Audio.Sound.createAsync(
-        require("../assets/audio/tada.mp3")
+        require("./assets/audio/tada.mp3")
       );
-      mount = false;
       await sound.playAsync();
+      let progressValue = 0;
+      const stepDuration = 1;
+      const increment = 0.01;
+      const interval = setInterval(() => {
+        progressValue += increment;
+        setProgressBar(progressValue);
+        if (progressValue >= 1) {
+          clearInterval(interval);
+        }
+      }, stepDuration);
+      setShowTada(true);
+      mount = false;
     }
-    setShowTada(true);
-    return;
   };
 
   useEffect(() => {
@@ -130,24 +132,7 @@ export default function AnimatedScreen() {
       ],
     };
   });
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      width: `${progress.value * 100}%`,
-    };
-  });
 
-  useAnimatedReaction(
-    () => progress.value,
-    (value) => {
-      let displayValue = 1;
-      if (value >= 0.5 && value < 1) {
-        displayValue = 50;
-      } else if (value === 1) {
-        displayValue = 100;
-      }
-      runOnJS(setProgressPercentage)(displayValue);
-    }
-  );
   const handleNext = () => {
     router.push("/test");
   };
@@ -217,14 +202,18 @@ export default function AnimatedScreen() {
         >
           Level 2
         </Animated.Text>
-        <Animated.View
-          className="w-[80%] h-2 md:h-3 rounded-xl bg-[#DCE2EC] mt-4 "
-          style={[{ opacity: fadeInValue }]}
-        >
-          <Animated.View
-            className="h-[100%] bg-[#0D61FD] rounded-xl"
-            style={[animatedStyle]}
-          />
+        <Animated.View style={[{ opacity: fadeInValue }]}>
+          <View className="w-[100%]  items-end  mt-4  ">
+            <Progress.Bar
+              progress={progressBar}
+              width={deviceWidth / 1.24}
+              height={progressBarHeight}
+              color={"#0D61FD"}
+              unfilledColor={"white"}
+              borderWidth={1}
+              borderColor="#C9D0DE"
+            />
+          </View>
         </Animated.View>
         <Animated.View
           className="flex-row items-center justify-between w-[79%] mb-6 md:mb-3 "
@@ -234,7 +223,7 @@ export default function AnimatedScreen() {
             Progress
           </Text>
           <Text className="text-base md:text-xl font-semibold text-[#313B4D]">
-            {progressPercentage}%
+            {`${(progressBar * 100).toFixed(0)}%`}
           </Text>
         </Animated.View>
       </ImageBackground>
