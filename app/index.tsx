@@ -1,34 +1,31 @@
-/** @format */
-
 import React, { useEffect, useRef, useState } from "react";
 import {
-  ImageBackground,
   Image,
   View,
   Text,
   Dimensions,
   Pressable,
+  StatusBar,
 } from "react-native";
-import LottieView from "lottie-react-native";
 import Animated, {
-  Easing,
-  interpolate,
+  withDelay,
+  withSpring,
   useSharedValue,
   useAnimatedStyle,
-  withTiming,
-  withSequence,
-  withSpring,
-  withDelay,
-  useAnimatedReaction,
-  runOnJS,
 } from "react-native-reanimated";
-import { useRouter } from "expo-router";
 import * as Progress from "react-native-progress";
-import { Audio } from "expo-av";
 import Hexagon from "./Hexagon";
+import TextContainer from "./TextContainer";
 
 const deviceHeight = Dimensions.get("window").height;
 const deviceWidth = Dimensions.get("window").width;
+
+const textData = [
+  { id: 1, title: "Daily goal complete!" },
+  { id: 2, title: "You completed 30 of 30 exercises" },
+  { id: 3, title: "You trained for 12 min, 37 sec" },
+  { id: 4, title: "Trivia score: 55 correct of 60" },
+];
 
 const Trophy_Hexagon = {
   activeColor: ["#ad8578", "#a57085", "#985299", "#9145a1"],
@@ -37,222 +34,189 @@ const Trophy_Hexagon = {
 };
 
 export default function AnimatedScreen() {
-  const router = useRouter();
-  const [showTada, setShowTada] = useState(false);
-  const [text] = useState("Congrats! You reached a new level");
-  const animatedValues = text.split("").map(() => useSharedValue(0));
-  const [progressPercentage, setProgressPercentage] = useState(0.01);
+  const [text] = useState("Great Work!");
   const [progressBar, setProgressBar] = useState(0);
-  const progressBarHeight: number = Math.ceil(deviceWidth / 60);
+  const progressBarHeight = Math.ceil(deviceWidth / 60);
+  const [progressBarC, setProgressBarC] = useState(false);
+  const [showCard, setShowCard] = useState(false);
+  const cardScale = useSharedValue(1);
 
-  const animation = useRef<LottieView>(null);
-  const scaleValue = useSharedValue(0);
-  const rotateValue = useSharedValue(0);
-  const fadeInValue = useSharedValue(0);
-  const popScaleValue = useSharedValue(1);
-  const progress = useSharedValue(0.01);
-
-  let mount = true;
-  const playSound = async () => {
-    if (mount) {
-      const { sound }: any = await Audio.Sound.createAsync(
-        require("./assets/audio/tada.mp3")
-      );
-      await sound.playAsync();
-      let progressValue = 0;
-      const stepDuration = 1;
-      const increment = 0.01;
-      const interval = setInterval(() => {
-        progressValue += increment;
-        setProgressBar(progressValue);
-        if (progressValue >= 1) {
-          clearInterval(interval);
-        }
-      }, stepDuration);
-      setShowTada(true);
-      mount = false;
-    }
+  const startProgressBar = async () => {
+    let progressValue = 0;
+    const stepDuration = 1;
+    const increment = 0.01;
+    const interval = setInterval(() => {
+      progressValue += increment;
+      setProgressBar(progressValue);
+      if (progressValue >= 1) {
+        clearInterval(interval);
+        setProgressBarC(true);
+      }
+    }, stepDuration);
   };
 
+  const animations = textData.map(() => useSharedValue(0));
+
   useEffect(() => {
-    animatedValues.forEach((anim, index) => {
-      anim.value = withDelay(index * 30, withTiming(1, { duration: 100 }));
+    !progressBarC && startProgressBar();
+
+    progressBarC && func();
+  }, [progressBarC]);
+
+  const func = () => {
+    animations.forEach((anim, index) => {
+      anim.value = withDelay(
+        index * 500,
+        withSpring(1, { damping: 10, stiffness: 80 })
+      );
     });
 
-    const totalAnimationDuration = text.length * 30 + 100;
-    const sequence = withSequence(
-      withDelay(
-        totalAnimationDuration,
-        withTiming(1, { duration: 3250 }, () => {
-          runOnJS(playSound)();
-          fadeInValue.value = withTiming(
-            1,
-            {
-              duration: 1000,
-              easing: Easing.out(Easing.ease),
-            },
-            () => {
-              popScaleValue.value = withSpring(
-                2,
-                {
-                  damping: 2,
-                  stiffness: 80,
-                  mass: 1,
-                  overshootClamping: false,
-                  restDisplacementThreshold: 0.01,
-                  restSpeedThreshold: 0.2,
-                },
-                () => {
-                  popScaleValue.value = withSpring(1, {
-                    damping: 8,
-                    stiffness: 90,
-                    mass: 1,
-                    overshootClamping: false,
-                    restDisplacementThreshold: 0.01,
-                    restSpeedThreshold: 0.03,
-                  });
-                }
-              );
-            }
-          );
-        })
-      ),
-      withTiming(1, { duration: 3250 })
-    );
+    setTimeout(() => {
+      setShowCard(true);
+      cardScale.value = withSpring(1, { damping: 10, stiffness: 80 });
+    }, textData.length * 500);
+  };
 
-    scaleValue.value = sequence;
-    rotateValue.value = sequence;
-  }, []);
-  const rotateAnimation = useAnimatedStyle(() => {
+  const animatedCardStyle = useAnimatedStyle(() => {
     return {
-      transform: [
-        { scale: interpolate(scaleValue.value, [0, 1], [0, 1]) },
-        { rotate: `${interpolate(rotateValue.value, [0, 1], [2160, 0])}deg` },
-        { scale: popScaleValue.value },
-      ],
+      transform: [{ scale: cardScale.value }],
     };
   });
 
-  const handleNext = () => {
-    router.push("/test");
-  };
   return (
-    <>
-      <ImageBackground
-        source={require("./assets/images/backGround.png")}
-        className="flex-1 items-center justify-center"
-        imageStyle={{ resizeMode: "cover" }}
-      >
+    <View className="flex-1 items-center w-[100%]  bg-[#F3F7FF]">
+      <View className=" items-center flex-1 w-[100%] h-[100%] ">
         <Image
           source={require("./assets/images/logo.png")}
-          className="w-[50%] h-[8%]"
+          className="w-[50%] h-[6%] mt-12 "
           resizeMode="contain"
         />
-        <View className="flex-row flex-wrap w-[63%] self-center justify-center items-center">
-          {text.split("").map((char, index) => {
-            const animatedStyle = useAnimatedStyle(() => ({
-              opacity: animatedValues[index].value,
-              transform: [
-                {
-                  translateY: interpolate(
-                    animatedValues[index].value,
-                    [0, 1],
-                    [10, 0]
-                  ),
-                },
-              ],
-            }));
-
-            return (
-              <Animated.Text
-                key={`${char}-${index}`}
-                className="text-2xl md:text-3xl font-bold text-[#313B4D] text-center"
-                style={animatedStyle}
-              >
-                {char}
-              </Animated.Text>
-            );
-          })}
-        </View>
-        <Animated.View
-          className=" justify-center items-center rounded-[30px] z-10"
-          style={rotateAnimation}
-        >
-          <Hexagon
-            hexagonSize={deviceHeight / 12}
-            fillPercentage={1}
-            cornerRadius={2.5}
-            iconWidth={deviceHeight / 16}
-            iconHeight={deviceHeight / 16}
-            strokeWidth={4}
-            activeColor={Trophy_Hexagon.activeColor}
-            fillColor={Trophy_Hexagon.fillColor}
-            borderColor={Trophy_Hexagon.borderColor}
-          />
-        </Animated.View>
-        <Animated.Text
-          className="text-xl md:text-2xl font-bold text-[#313B4D]"
-          style={{ opacity: fadeInValue }}
-        >
-          Speech in Noise
-        </Animated.Text>
-        <Animated.Text
-          className="text-lg md:text-2xl font-normal text-[#5D687E]"
-          style={{ opacity: fadeInValue }}
-        >
-          Level 2
-        </Animated.Text>
-        <Animated.View style={[{ opacity: fadeInValue }]}>
-          <View className="w-[100%]  items-end  mt-4  ">
+        <Text className="text-[32px] md:text-3xl text-[#313B4D] text-center mt-2 ">
+          {text}
+        </Text>
+        <View className="bg-white w-[91%] p-2 rounded-[17px] pb-5 mt-4 ">
+          <View className="items-center flex-row px-2 pt-1">
+            <Hexagon
+              hexagonSize={deviceHeight / 22}
+              fillPercentage={1}
+              cornerRadius={2.5}
+              iconWidth={deviceHeight / 22}
+              iconHeight={deviceHeight / 22}
+              strokeWidth={4}
+              activeColor={Trophy_Hexagon.activeColor}
+              fillColor={Trophy_Hexagon.fillColor}
+              borderColor={Trophy_Hexagon.borderColor}
+            />
+            <View className="pl-1">
+              <Text className="text-2xl md:text-2xl font-bold text-[#313B4D]">
+                Training complete
+              </Text>
+              <Text className="text-lg md:text-2xl font-normal text-[#5D687E]">
+                15 minutes - 30 exercises
+              </Text>
+            </View>
+          </View>
+          <View className=" items-center flex-row self-center w-[85%] ">
             <Progress.Bar
               progress={progressBar}
-              width={deviceWidth / 1.24}
+              width={deviceWidth / 1.8}
               height={progressBarHeight}
               color={"#0D61FD"}
               unfilledColor={"white"}
               borderWidth={1}
               borderColor="#C9D0DE"
             />
+            <View className="justify-between items-center flex-row self-center pb-1 w-[26%]">
+              <Text className="text-base md:text-xl pl-2 text-[#5D687E]">
+                100 of
+              </Text>
+              <Text className="text-base md:text-xl text-[#5D687E] w-[30">
+                {` ${(progressBar * 100).toFixed(0)}`}
+              </Text>
+            </View>
           </View>
-        </Animated.View>
-        <Animated.View
-          className="flex-row items-center justify-between w-[79%] mb-6 md:mb-3 "
-          style={{ opacity: fadeInValue }}
-        >
-          <Text className="text-base md:text-xl font-semibold text-[#313B4D]">
-            Progress
-          </Text>
-          <Text className="text-base md:text-xl font-semibold text-[#313B4D]">
-            {`${(progressBar * 100).toFixed(0)}%`}
-          </Text>
-        </Animated.View>
-      </ImageBackground>
-      {showTada && (
-        <View className="absolute bottom-0 w-[150%] h-[80%] items-center justify-center self-center">
-          <LottieView
-            autoPlay={true}
-            loop={false}
-            ref={animation}
-            className="w-[100%] h-[100%] items-center justify-end"
-            source={require("./assets/images/confettiBackground.json")}
-          />
+
+          <View>
+            {textData.map((item, index) => {
+              const animatedStyle = useAnimatedStyle(() => {
+                return {
+                  transform: [{ scale: animations[index].value }],
+                };
+              });
+
+              return (
+                <Animated.View key={index.toString()} style={animatedStyle}>
+                  <TextContainer item={item} />
+                </Animated.View>
+              );
+            })}
+          </View>
         </View>
-      )}
-      <View className="h-[10%] w-full bg-white shadow-lg flex-row items-center justify-evenly">
-        <Pressable className="w-[40%] h-[65%] bg-white border border-[#0D61FD] rounded-lg items-center justify-center">
-          <Text className="text-xl md:text-2xl font-normal text-blue-600">
-            End
-          </Text>
-        </Pressable>
-        <Pressable
-          className="w-[40%] h-[65%] bg-[#0D61FD] border border-[#0D61FD]  rounded-lg items-center justify-center"
-          onPress={handleNext}
-        >
-          <Text className="text-xl  md:text-2xl font-medium text-white">
+        {showCard && (
+          <Animated.View
+            style={[animatedCardStyle]}
+            className="bg-white w-[91%] p-2 rounded-[17px] mt-4 py-3 px-4 mb-4"
+          >
+            <View className="items-center rounded-[30px] z-10 flex-row ">
+              <Image
+                source={require("./assets/images/flame.png")}
+                style={{ width: 70, height: 120 }}
+                resizeMode="cover"
+              />
+              <View>
+                <View className=" ml-6">
+                  <Text className="text-2xl md:text-2xl font-semibold text-[#313B4D]">
+                    7 days in a row!
+                  </Text>
+                  <View className="items-center flex-row mt-2 mb-2  ">
+                    <Image
+                      source={require("./assets/images/calendar2.png")}
+                      style={{ width: 35, height: 35, marginLeft: 1 }}
+                      resizeMode="cover"
+                      tintColor={"#0D61FD"}
+                    />
+                    <Image
+                      source={require("./assets/images/line.png")}
+                      style={{ width: 135, height: 50, marginLeft: 2 }}
+                      resizeMode="contain"
+                      tintColor={"#0D61FD"}
+                    />
+                    <Image
+                      source={require("./assets/images/checkmark.png")}
+                      style={{ width: 40, height: 40 }}
+                      resizeMode="cover"
+                      tintColor={"#0D61FD"}
+                    />
+                  </View>
+
+                  <Text className="text-lg md:text-xl font-normal text-[#5D687E] w-60">
+                    You are on a streak! See ya tomorrow, ok?
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </Animated.View>
+        )}
+      </View>
+      <View
+        className="h-[10%] w-full bg-white items-center justify-evenly"
+        style={{
+          elevation: 5,
+          shadowColor: "black",
+          shadowOffset: {
+            width: 4,
+            height: 6,
+          },
+          shadowOpacity: 0.25,
+          shadowRadius: 3.5,
+        }}
+      >
+        <Pressable className="w-[91%] h-[60%] bg-[#0D61FD] border border-[#0D61FD]  rounded-xl md:rounded-xl items-center justify-center">
+          <Text className="text-xl md:text-3xl font-bold text-white ">
             Continue
           </Text>
         </Pressable>
       </View>
-    </>
+    </View>
   );
 }
