@@ -126,11 +126,11 @@ export default function AnimatedScreen() {
               borderWidth={1}
               borderColor="#C9D0DE"
             />
-            <View className="justify-between items-center flex-row self-center pb-1 w-[26%]">
+            <View className="justify-between items-center flex-row self-center pb-1  sm:w-[26%] md:w-[15%] lg:w-[10%] ">
               <Text className="text-base md:text-xl pl-2 text-[#5D687E]">
                 100 of
               </Text>
-              <Text className="text-base md:text-xl text-[#5D687E] w-[30">
+              <Text className="text-base md:text-xl text-[#5D687E]">
                 {` ${(progressBar * 100).toFixed(0)}`}
               </Text>
             </View>
@@ -165,7 +165,7 @@ export default function AnimatedScreen() {
               />
               <View>
                 <View className=" ml-6">
-                  <Text className="text-2xl md:text-2xl font-semibold text-[#313B4D]">
+                  <Text className="text-2xl md:text-3xl font-semibold text-[#313B4D]">
                     7 days in a row!
                   </Text>
                   <View className="items-center flex-row mt-2 mb-2  ">
