@@ -155,7 +155,7 @@ export default function AnimatedScreen() {
         {showCard && (
           <Animated.View
             style={[animatedCardStyle]}
-            className="bg-white w-[91%] p-2 rounded-[17px] mt-4 py-3 px-4 mb-4"
+            className="bg-white w-[91%] p-2 rounded-[17px] mt-4 py-7 px-4 mb-4"
           >
             <View className="items-center rounded-[30px] z-10 flex-row ">
               <Image
