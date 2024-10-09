@@ -104,6 +104,9 @@ export default function AnimatedScreen() {
   const backHandler = () => {
     router.back();
   };
+  const handleNext = () => {
+    router.push("/testThree");
+  };
   const progressCircleValue = (
     <View className="justify-center items-center">
       <Text className="text-3xl md:text-4xl font-bold text-[#313B4D]">
@@ -205,7 +208,10 @@ export default function AnimatedScreen() {
             className="h-10 w-10 md:w-16 md:h-16"
           />
         </Pressable>
-        <Pressable className="w-[70%] h-[65%] bg-[#0D61FD] border border-[#0D61FD]  flex-row  rounded-2xl md:rounded-3xl items-center justify-center">
+        <Pressable
+          className="w-[70%] h-[65%] bg-[#0D61FD] border border-[#0D61FD]  flex-row  rounded-2xl md:rounded-3xl items-center justify-center"
+          onPress={handleNext}
+        >
           <Text className="text-xl md:text-3xl font-medium text-white">
             Keep going
           </Text>
