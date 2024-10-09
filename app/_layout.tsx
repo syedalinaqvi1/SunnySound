@@ -7,10 +7,9 @@ export default function RootLayout() {
   return (
     <Stack
       screenOptions={{
-        headerShown: false, // Disabling the header for all screens
+        headerShown: false,
       }}
     >
-      {/* Define screens with their corresponding options */}
       <Stack.Screen name="index" options={{ title: "Home" }} />
       <Stack.Screen name="testOne" options={{ title: "Test One" }} />
       <Stack.Screen name="test" options={{ title: "Test Two" }} />
