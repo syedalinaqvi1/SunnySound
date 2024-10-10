@@ -1,12 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import {
-  Image,
-  View,
-  Text,
-  Dimensions,
-  Pressable,
-  StatusBar,
-} from "react-native";
+import { Image, View, Text, Dimensions, Pressable } from "react-native";
 import Animated, {
   withDelay,
   withSpring,
@@ -61,7 +54,6 @@ export default function AnimatedScreen() {
 
   useEffect(() => {
     !progressBarC && startProgressBar();
-
     progressBarC && func();
   }, [progressBarC]);
 
@@ -133,15 +125,14 @@ export default function AnimatedScreen() {
               borderColor="#C9D0DE"
             />
             <View className="justify-between items-center flex-row self-center pb-1 w-[26%]">
-              <Text className="text-base md:text-xl pl-2 text-[#5D687E]">
-                100 of
-              </Text>
               <Text className="text-base md:text-xl text-[#5D687E] w-[30">
-                {` ${(progressBar * 100).toFixed(0)}`}
+                {` ${(progressBar * 100).toFixed(0)}`} of
+              </Text>
+              <Text className="text-base md:text-xl pl-2 text-[#5D687E]">
+                100
               </Text>
             </View>
           </View>
-
           <View>
             {textData.map((item, index) => {
               const animatedStyle = useAnimatedStyle(() => {
@@ -149,7 +140,6 @@ export default function AnimatedScreen() {
                   transform: [{ scale: animations[index].value }],
                 };
               });
-
               return (
                 <Animated.View key={index.toString()} style={animatedStyle}>
                   <TextContainer item={item} />
@@ -161,7 +151,7 @@ export default function AnimatedScreen() {
         {showCard && (
           <Animated.View
             style={[animatedCardStyle]}
-            className="bg-white w-[91%] p-2 rounded-[17px] mt-4 py-7 px-4 mb-4"
+            className="bg-white w-[91%] p-2 rounded-[17px] mt-4 py-3 px-4 mb-4"
           >
             <View className="items-center rounded-[30px] z-10 flex-row ">
               <Image
@@ -194,7 +184,6 @@ export default function AnimatedScreen() {
                       tintColor={"#0D61FD"}
                     />
                   </View>
-
                   <Text className="text-lg md:text-xl font-normal text-[#5D687E] w-60">
                     You are on a streak! See ya tomorrow, ok?
                   </Text>
