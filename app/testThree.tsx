@@ -71,7 +71,7 @@ export default function AnimatedScreen() {
     }, stepDuration);
   };
 
-  const animations = textData.map(() => useSharedValue(0));
+  const animations = useRef(textData.map(() => useSharedValue(0))).current;
 
   useEffect(() => {
     !progressBarC && startProgressBar();
