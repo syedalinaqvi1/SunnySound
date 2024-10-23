@@ -34,6 +34,20 @@ const Trophy_Hexagon = {
   borderColor: ["#E06B16", "#D600C4"],
 };
 
+const AnimatedTextItem = ({ item, animation }: any) => {
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: animation.value }],
+    };
+  });
+
+  return (
+    <Animated.View style={animatedStyle}>
+      <TextContainer item={item} />
+    </Animated.View>
+  );
+};
+
 export default function AnimatedScreen() {
   const router = useRouter();
   const [text] = useState("Great Work!");
@@ -146,18 +160,13 @@ export default function AnimatedScreen() {
               </View>
             </View>
             <View>
-              {textData.map((item, index) => {
-                const animatedStyle = useAnimatedStyle(() => {
-                  return {
-                    transform: [{ scale: animations[index].value }],
-                  };
-                });
-                return (
-                  <Animated.View key={index.toString()} style={animatedStyle}>
-                    <TextContainer item={item} />
-                  </Animated.View>
-                );
-              })}
+              {textData.map((item, index) => (
+                <AnimatedTextItem
+                  key={item.id.toString()}
+                  item={item}
+                  animation={animations[index]}
+                />
+              ))}
             </View>
           </View>
           {showCard && (
